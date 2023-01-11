@@ -214,7 +214,7 @@ def render_page_content(pathname, login_state, register_state):
 
 
 if __name__ == "__main__":
-    app.run_server(host='172.16.50.62',port=8051, debug=True)
+    app.run_server(host='172.16.50.62',port=8051, debug=False)
     #app.run_server(host='192.168.1.17',port=8051, debug=True)
     
     
