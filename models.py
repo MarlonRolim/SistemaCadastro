@@ -27,7 +27,7 @@ Users_tbl = Table('users', Users.metadata)
     
 class Cadastros(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    cnpj = db.Column(db.String(18), unique=True)
+    cnpj = db.Column(db.String(18))
     cpf = db.Column(db.String(14))
     ie = db.Column(db.String(20))
     razao = db.Column(db.String(50))

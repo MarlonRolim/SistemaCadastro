@@ -22,7 +22,7 @@ from pages.styles import *
 def preencher_Cadastros(nomes):
     x = []
     for i in nomes: x.append(card_cadastro(nomes[i]))
-    return html.Div(x)
+    return html.Div([html.Div(x),html.Br(),html.Br()])
 
 def corStatus(status):
     if status == 'Completo': return '#14a583'
@@ -91,7 +91,7 @@ def render_layout():
                             html.Legend('Resultados', style={'text-align':'center','font-size':'20px', 'color':'#14a583'}),
                             html.Hr(),
                             html.Div(id='result_pesquisa',style={'width':'100%', 'padding': 0, 'margin': 0})
-                        ], style={'widht':'900px', 'height': '100vh', 'background-color':'white', 'padding-left': '10px', 'padding-right': '10px'})
+                        ], style={'widht':'900px','min-height': '100vh','height': '100%', 'background-color':'white', 'padding-left': '10px', 'padding-right': '10px'})
     return template
 
 # ================ Callbacks ================ #
@@ -121,6 +121,9 @@ def pesquisa(n_clicks,select,texto):
             texto = ''
         
         df = pd.read_sql(fr"select * from cadastros where {pesquisa} like '%%{str(texto)}%%'", create_connection())
+        if len(df) == 0:
+            return html.Legend('Não há resultados para essa pesquisa',style={"text-align":'center'})
+        
         dic = df.to_dict('index')
         
         

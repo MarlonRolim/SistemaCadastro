@@ -13,6 +13,11 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import login_user, logout_user, current_user
 from dash.exceptions import PreventUpdate
 
+
+estados = ['AC', 'AL', 'AM', 'AP', 'BA', 'CE', 'DF', 'ES', 'GO', 'MA', 'MG',
+       'MS', 'MT', 'PA', 'PB', 'PE', 'PI', 'PR', 'RJ', 'RN', 'RO', 'RR',
+       'RS', 'SC', 'SE', 'SP', 'TO']
+
 def dados_bancarios():
     template = html.Div([
                         html.Legend('Dados Bancários', style={'text-align':'center'}),
@@ -48,7 +53,7 @@ def dados_bancarios():
 def render_layout():
     
     template = html.Div([
-                    
+                    dcc.Location(id='location_cad'),
                     html.Br(),
                     html.Legend('Cadastro de Fornecedor', style={'text-align':'center'}),
                     html.Hr(),
@@ -93,7 +98,9 @@ def render_layout():
                     dbc.Row([
                         dbc.Col([
                             dbc.Label('Estado: '),
-                            dbc.Input(placeholder='Ex: SP, RS, SC...', type="text", id='txt-estado'),
+                            dbc.Select(id='txt-estado', 
+                                    options=[{'label': i, 'value': i} for i in estados],
+                                    value='SP'),
                         ],width=6, style={'padding-right': '10px'}),
                         dbc.Col([
                             dbc.Label('CEP: '),
@@ -134,7 +141,7 @@ def render_layout():
                     
                     dbc.Select(id='select_pagamento', 
                                     options=[{'label': 'Cheque', 'value': 'Cheque'},{'label': 'Depósito', 'value': 'Depósito'}],
-                                    value=['Cheque']),
+                                    value='Cheque'),
                     
                     html.Hr(),
                     
@@ -150,7 +157,7 @@ def render_layout():
                                 dbc.Label('Tipo Conta: '),
                                 dbc.Select(id='select-tipo-conta', 
                                             options=[{'label': 'Corrente', 'value': 'Corrente'},{'label': 'Poupança', 'value': 'Poupança'}],
-                                            value=['Corrente']),
+                                            value='Corrente'),
                                 html.Br(),
                                 dbc.Label('Agência: '),
                                 dbc.Input(placeholder='', type="text", id='txt-agencia'),
@@ -268,7 +275,7 @@ def cadastrar(n_clicks, cnpj, cpf, ie, razao, endereco, n_endereco, complemento,
     if n_banco == None:
         n_banco = ''
     
-    if str(form_pagamento[0]) == "Cheque":
+    if form_pagamento == "Cheque":
         tipo_conta == ''
     
     
@@ -298,10 +305,10 @@ def cadastrar(n_clicks, cnpj, cpf, ie, razao, endereco, n_endereco, complemento,
                                     tel_com = str(tel_com),
                                     tel_cel = str(tel_cel),
                                     email = str(email),
-                                    forma_pagamento = str(form_pagamento[0]),
+                                    forma_pagamento = str(form_pagamento),
                                     banco = str(banco),
                                     n_banco = str(n_banco),
-                                    tipo_conta = str(tipo_conta[0]),
+                                    tipo_conta = str(tipo_conta),
                                     agencia = str(agencia),
                                     conta = str(conta),
                                     dig_conta = str(n_conta),
@@ -313,11 +320,18 @@ def cadastrar(n_clicks, cnpj, cpf, ie, razao, endereco, n_endereco, complemento,
     conn.execute(ins)
     conn.close()
     
-    return 'Não Validou',dbc.Alert(fr'CNPJ: {cnpj}',color='danger')
+    return 'Sucesso',''
     
     
     
-    
+@app.callback(
+    Output('location_cad', 'pathname'),
+    Input('cad-store', 'data'),
+    State('cad-store', 'data')
+)
+def sucesso(trig, data):
+    if data == "Sucesso":
+        return '/sucesso'
     
 
 

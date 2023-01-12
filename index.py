@@ -7,7 +7,7 @@ import dash
 from flask_login import login_user, logout_user, current_user
 from dash.exceptions import PreventUpdate
 from app import *
-from pages import cadastrospendentes, homepage, login, register, cadastro, pesquisacadastro, alteracadastro, visualizarcadastro
+from pages import cadastrospendentes, success, logout, homepage, login, register, cadastro, pesquisacadastro, alteracadastro, visualizarcadastro
 
 from pages.styles import *
 
@@ -19,11 +19,10 @@ login_manager.login_view = '/login'
 
 # =====================  Layout  ===================== #
 
-def createNavBar(path):
-    if path == "/" or path == '/homepage':
-        logout = dbc.Col(dbc.Button(html.Div(className="fa fa-sign-out", style=card_icon_menu),id='logout_button',style={'align-itens':'center','width': '100%', 'border': 'None' ,'background-color': 'transparent', 'box-shadow':'None'}),width=2)
-    else:
-        logout = dbc.Col(width=2)
+def createNavBar():
+    
+    logout = dbc.Col(dbc.Button(html.Div(className="fa fa-sign-out", style=card_icon_menu),id='logout_button',href='/logout',style={'align-itens':'center','width': '100%', 'border': 'None' ,'background-color': 'transparent', 'box-shadow':'None'}),width=2)
+    
         
     template= html.Div([
                             dbc.Row([
@@ -67,6 +66,7 @@ def render_layout():
                             dcc.Store(id='login-state',data=''),
                             dcc.Store(id='register-state',data=''),
                             dcc.Store(id='cad-store', data=''),
+                            dcc.Store(id='alt-store', data=''),
                             html.Div(id='page-content', style={'width':'100%','padding-left': '10px', 'padding-right': '10px'})
                             
                         
@@ -119,20 +119,7 @@ def render_page_content(login_state, register_state):
     else:
         return '/'
     
-@app.callback(
-    Output('log-url', 'pathname'),
-    Input('logout_button', 'n_clicks')
-    
-)
-def successful(n_clicks):
-    if n_clicks == None:
-        raise PreventUpdate
-    
-    if current_user.is_authenticated:
-        logout_user()
-        return '/login'
-    else: 
-        return '/login'
+
     
     
 
@@ -148,24 +135,24 @@ def render_page_content(pathname, login_state, register_state):
     
     if (pathname == "/login" or pathname == "/"):
         if current_user.is_authenticated:
-            return  createNavBar(pathname), homepage.render_layout(current_user.name)
+            return  createNavBar(), homepage.render_layout(current_user.name)
         else:
             return '',login.render_layout(login_state)
 
     if pathname == "/register":
         
         if current_user.is_authenticated:
-            return createNavBar(pathname), homepage.render_layout(current_user.name)
+            return createNavBar(), homepage.render_layout(current_user.name)
         else:
             return '',register.render_layout(register_state)
         
     if pathname == "/cadastro":
         #if current_user.is_authenticated:
-        #    return createNavBar(pathname), cadastro.render_layout()
+        #    return createNavBar(), cadastro.render_layout()
         #else:
         #    return '',login.render_layout("")
         
-        return createNavBar(pathname), cadastro.render_layout()
+        return createNavBar(), cadastro.render_layout()
     
     if pathname == "/cadastrospendentes":
         #if current_user.is_authenticated:
@@ -173,7 +160,7 @@ def render_page_content(pathname, login_state, register_state):
         #else:
         #    return '',login.render_layout("")
         
-        return createNavBar(pathname), cadastrospendentes.render_layout()
+        return createNavBar(), cadastrospendentes.render_layout()
     
     if  "/alteracadastro" in pathname:
         #if current_user.is_authenticated:
@@ -182,7 +169,7 @@ def render_page_content(pathname, login_state, register_state):
         #    return '',login.render_layout("")
         pagina_origem = pathname.split('/')[1]
         id = pathname.split('/')[3]
-        return createNavBar(pathname), alteracadastro.render_layout(id,pagina_origem)
+        return createNavBar(), alteracadastro.render_layout(id,pagina_origem)
     
     if  "/visualizar" in pathname:
         #if current_user.is_authenticated:
@@ -191,7 +178,7 @@ def render_page_content(pathname, login_state, register_state):
         #    return '',login.render_layout("")
         pagina_origem = pathname.split('/')[1]
         id = pathname.split('/')[3]
-        return createNavBar(pathname), visualizarcadastro.render_layout(id,pagina_origem)
+        return createNavBar(), visualizarcadastro.render_layout(id,pagina_origem)
     
     if pathname == "/pesquisacadastro":
         #if current_user.is_authenticated:
@@ -199,12 +186,23 @@ def render_page_content(pathname, login_state, register_state):
         #else:
         #    return '',login.render_layout("")
         
-        return createNavBar(pathname), pesquisacadastro.render_layout()
+        return createNavBar(), pesquisacadastro.render_layout()
+    
+    if pathname == '/sucesso':
+         #if current_user.is_authenticated:
+        #    return createNavBar(), sucesso.render_layout()
+        #else:
+        #    return '',login.render_layout("")
+        
+        return '', success.render_layout()
+    
+    if pathname == '/logout':
+        return '', logout.render_layout()
     
     if pathname == '/homepage':
         if current_user.is_authenticated:
             
-            return createNavBar(pathname), homepage.render_layout(current_user.name)
+            return createNavBar(), homepage.render_layout(current_user.name)
         else:
             return '', login.render_layout("Usuário não logado  ")
         #return createNavBar(), homepage.render_layout("Marlon Rolim")
@@ -214,7 +212,8 @@ def render_page_content(pathname, login_state, register_state):
 
 
 if __name__ == "__main__":
-    app.run_server(host='172.16.50.62',port=8051, debug=False)
+    #app.run_server(host='172.16.50.62',port=8051, debug=True)
+    app.run_server(debug=False)
     #app.run_server(host='192.168.1.17',port=8051, debug=True)
     
     

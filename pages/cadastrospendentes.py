@@ -73,7 +73,10 @@ def preencher_Cadastros(nomes):
 def render_layout():
     df = pd.read_sql(fr"select * from cadastros where usuario = '{current_user.username}'", create_connection())
     cadastros = df.to_dict('index')
-    
+    if len(df) == 0:
+        pendencias = html.Legend('Não há Cadastros Pendentes')
+    else:
+        pendencias = preencher_Cadastros(cadastros)
     template = html.Div([
                             dbc.Modal(
                                 [
@@ -89,11 +92,11 @@ def render_layout():
                             html.Br(),
                             html.Legend('Cadastros Pendentes', style={'text-align':'center','font-size':'28px', 'color':'#14a583'}),
                             html.Hr(),
-                            preencher_Cadastros(cadastros),
+                            pendencias,
                             html.Div(id='testeids'),
                             html.Br(),
                             html.Hr()
-                        ], style={'widht':'100%', 'height': '100vh', 'background-color':'white', 'padding-left': '10px', 'padding-right': '10px'})
+                        ], style={'widht':'100%', 'min-height':'100vh','height': '100%', 'background-color':'white', 'padding-left': '10px', 'padding-right': '10px'})
     return template
 
 # ================ Callbacks ================ #
@@ -124,7 +127,7 @@ def abrir_modal_pendencias(n_click,is_open):
                     
             if len(df) == 0:
                 
-                return not is_open, "Aguardando Cadastro", btns
+                return not is_open, "Aguardando Aprovação", btns
             else:
                 dic = df.to_dict('index')
                 lista = []
