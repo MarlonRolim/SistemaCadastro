@@ -120,7 +120,7 @@ def pesquisa(n_clicks,select,texto):
         if texto == None:
             texto = ''
         
-        df = pd.read_sql(fr"select * from cadastros where {pesquisa} like '%%{str(texto)}%%'", create_connection())
+        df = pd.read_sql(fr"select * from cadastros where {pesquisa} ilike '%%{str(texto)}%%'", create_connection())
         if len(df) == 0:
             return html.Legend('Não há resultados para essa pesquisa',style={"text-align":'center'})
         
