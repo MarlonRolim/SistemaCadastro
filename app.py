@@ -19,8 +19,10 @@ dbc_css = "https://cdn.jsdelivr.net/gh/AnnMarieW/dash-bootstrap-templates@V1.0.4
 
 
 app = dash.Dash(__name__, external_stylesheets=estilos + [dbc_css], meta_tags=[
-        {"name": "viewport", "content": "width=device-width, initial-scale=1"}
-    ])
+        {"name": "viewport", "content": "width=device-width, initial-scale=1"},
+        
+    ],title='Cadastros RB')
+app._favicon = ("assets/favicon.ico")
 server = app.server
 app.config.suppress_callback_exceptions = True
 
