@@ -30,12 +30,13 @@ def card_cadastro(cadastro):
     cnpj = cadastro['cnpj']
     cpf = cadastro['cpf']
     ie = cadastro['ie']
+    user = cadastro['name']
     status = cadastro['status_cad']
-    card_right['height'] = '110px'
+    card_right['height'] = '135px'
     card_icon['color'] = 'white'
     card_right["maxWidth"]= 30
     card_right['width']=25
-    card_group_css['height'] = '110px'
+    card_group_css['height'] = '135px'
     template = html.Div(dbc.CardGroup([
                     dbc.Card([
                                 html.Legend(nome, style={'margin-bottom':'0', 'color':'#14a583', 'font-weight':'bold','font-size':'18px'}),
@@ -46,14 +47,16 @@ def card_cadastro(cadastro):
                                         dbc.Label(fr'CPF: {cpf}', style={'margin':'0','padding':'0','font-size':'12px'}),
                                          html.Br(),
                                         dbc.Label(fr'I.E.: {ie}', style={'margin':'0','padding':'0','font-size':'12px'}),
+                                        html.Br(),
+                                        dbc.Label(fr'SOLICITANTE: {user}', style={'margin':'0','padding':'0','font-size':'12px'}),
                                     ],width=7),
                                     dbc.Col([
                                         html.Legend('Status', style={'text-align':'center', 'margin-bottom':'0','font-size':'18px'}),
                                         html.Legend(status, style={'color': corStatus(status),'font-weight':'bold', 'text-align':'center','font-size':'14px'})
                                     ],width=5)
                                 ]),
-                    ], style={"padding-left": "10px", "padding-top": "5px", 'height':'110px', 'width':'95%'}),
-                    dbc.Card(dbc.Button(html.Div(className="fa fa-angle-right", style=card_icon),id={'type': 'pendencias_cadastro', 'index': id}, color='link', style=card_icon),
+                    ], style={"padding-left": "10px", "padding-top": "5px", 'height':'135px', 'width':'95%'}),
+                    dbc.Card(dbc.Button(html.Div(className="fa fa-angle-right", style=card_icon),id={'type': 'pendencias_cadastro', 'index': id}, href=fr'/cadpendaprovacao/aprovarcadastro/{id}', color='link', style=card_icon),
                         color="success",
                         style=card_right,
                     )
@@ -65,34 +68,23 @@ def card_cadastro(cadastro):
 def preencher_Cadastros(nomes):
     x = []
     for i in nomes: 
-        if (nomes[i]['status_cad'] == "Incompleto") or nomes[i]['status_cad'] == "Pendente":         
-            x.append(card_cadastro(nomes[i]))
+               
+        x.append(card_cadastro(nomes[i]))
             
     return html.Div(x)
 
 def render_layout():
-    df = pd.read_sql(fr"select * from cadastros where usuario = '{current_user.id}' order by data_cad desc, razao asc ", create_connection())
+    df = pd.read_sql(fr"select c.*, u.name from cadastros c left join users u on c.usuario=u.id where c.status_cad <> 'Completo'", create_connection())
     cadastros = df.to_dict('index')
     if len(df) == 0:
-        pendencias = html.Legend('Não há Cadastros Pendentes', style={'text-align':'center'})
+        pendencias = html.Legend('Não há Cadastros Pendentes',style={'text-align': 'center'})
     else:
         pendencias = preencher_Cadastros(cadastros)
     template = html.Div([
-                            dbc.Modal(
-                                [
-                                    dbc.ModalHeader(dbc.ModalTitle("Pendencias", style={'text-align':'center','font-size':'28px', 'color':'#14a583'})),
-                                    dbc.ModalBody('Aguardando cadastro',id='pendencias_modal'),
-                                    dbc.ModalFooter(id='btns_footer')
-                                ],
-                                id="modal-sm",
-                                size="sm",
-                                is_open=False,
-                            ),
-                            dcc.Location(id='data-url-altera'),
+                            dcc.Location(id='data-url-aprova'),
                             html.Br(),
                             html.Legend('Cadastros Pendentes', style={'text-align':'center','font-size':'28px', 'color':'#14a583'}),
                             html.Hr(),
-                            html.Br(),
                             pendencias,
                             html.Div(id='testeids'),
                             html.Br(),
@@ -101,7 +93,7 @@ def render_layout():
     return template
 
 # ================ Callbacks ================ #
-
+'''
 @app.callback(
     Output('modal-sm','is_open'),
     Output('pendencias_modal','children'),
@@ -136,3 +128,4 @@ def abrir_modal_pendencias(n_click,is_open):
                     lista.append(html.Label(dic[i]['observacao'],style={'color':'red'}))
                 return not is_open, lista, btns
     return is_open, "", ""
+'''

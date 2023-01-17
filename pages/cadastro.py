@@ -276,7 +276,7 @@ def cadastrar(n_clicks, cnpj, cpf, ie, razao, endereco, n_endereco, complemento,
         n_banco = ''
     
     if form_pagamento == "Cheque":
-        tipo_conta == ''
+        tipo_conta = ''
     
     
     if agencia == None:
@@ -312,9 +312,9 @@ def cadastrar(n_clicks, cnpj, cpf, ie, razao, endereco, n_endereco, complemento,
                                     agencia = str(agencia),
                                     conta = str(conta),
                                     dig_conta = str(n_conta),
-                                    usuario = current_user.username,
+                                    usuario = current_user.id,
                                     status_cad = "Pendente",
-                                    data_cad = str(datetime.date.today())
+                                    data_cad = datetime.date.today()
                                     )
     conn = engine.connect()
     conn.execute(ins)

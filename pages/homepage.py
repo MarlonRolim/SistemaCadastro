@@ -19,7 +19,7 @@ load_figure_template(["quartz"])
 
 # =========  Layout  =========== #
 def render_layout(name):
-    df = pd.read_sql(fr"select * from cadastros where usuario = '{current_user.username}'", create_connection())
+    df = pd.read_sql(fr"select * from cadastros where usuario = '{current_user.id}'", create_connection())
     df['data_cad'] = pd.to_datetime(df['data_cad'],  yearfirst = True)
     inicio, fim = data_mesAtual()
     card_right["maxWidth"]= 15
@@ -40,7 +40,7 @@ def render_layout(name):
                             dbc.CardGroup([
                                 dbc.Card([html.A([
                                         html.Legend("Cadastros Pendentes"),
-                                        html.H5(len(df[df['status_cad']=='Pendente']), id="qtd-cad-pendentes", style={})], href='/cadastrospendentes', style={'text-decoration': 'none', 'color': 'grey'}),
+                                        html.H5(len(df[df['status_cad']!='Completo']), id="qtd-cad-pendentes", style={})], href='/cadastrospendentes', style={'text-decoration': 'none', 'color': 'grey'}),
                                 ], style={"padding-left": "15px", "padding-top": "5px", 'height':100, 'width':'98%'}),
                                 dbc.Card(
                                     color="warning",

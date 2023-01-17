@@ -29,10 +29,10 @@ def render_layout(message):
                     dbc.Button("Login", id="login_button"),
                     html.Span(message, style={'text-align': 'center','margin-top': '5px', 'color': 'red'}),
                     
-                    html.Div([
-                        html.Label("Ou", style={"margin-right": "5px"}),
-                        dcc.Link("Registre-se", href="/register"),
-                    ], style={"padding": "20px", "justify-content": "center", "display": "flex"})
+                    #html.Div([
+                    #    html.Label("Ou", style={"margin-right": "5px"}),
+                    #    dcc.Link("Registre-se", href="/register"),
+                    #], style={"padding": "20px", "justify-content": "center", "display": "flex"})
             
 
                 ], style=card_style, className="align-self-center")

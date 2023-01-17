@@ -20,15 +20,14 @@ def corStatus(status):
 
 def render_layout(id,pagina):
     df = pd.read_sql(fr"select * from cadastros where id = '{id}'", create_connection())
+    
+    df['data_cad'] = pd.to_datetime(df['data_cad']).dt.strftime(f'%d/%m/%Y')
     dic = df.to_dict('index')
     dic = dic[0]
-    data = dic['data_cad']
-    dia = data.split('-')[2]
-    mes = data.split('-')[1]
-    ano = data.split('-')[0]
+    
     botao_voltar = dbc.Button('Voltar', href=fr'/{pagina}',style={'width':'100%','margin-bottom':'10px'})
     botao_alterar = dbc.Button("Editar",href=f'/{pagina}/alteracadastro/{id}', style={'width':'100%'})
-    solicitante = pd.read_sql(fr"select * from users where username = '{dic['usuario']}'", create_connection())
+    solicitante = pd.read_sql(fr"select * from users where id = '{dic['usuario']}'", create_connection())
     solicitante = solicitante.to_dict('index')
     solicitante = solicitante[0]['name']
     template = html.Div([
@@ -48,7 +47,7 @@ def render_layout(id,pagina):
                     
                     dbc.Label('Data Cadastro: ', style={'font-size':'18px', 'color':'#14a583'}),
                     html.Br(),
-                    dbc.Label(fr"{dia}/{mes}/{ano}"),
+                    dbc.Label(fr"{dic['data_cad']}"),
                     html.Br(),
                     
                     dbc.Label('Solicitante: ', style={'font-size':'18px', 'color':'#14a583'}),

@@ -1,10 +1,11 @@
 import dash
+from dash import html, dcc, Input, Output, State
 import dash_bootstrap_components as dbc
 from sqlalchemy import Table, create_engine
 from sqlalchemy.sql import select
-
+from pages.styles import *
 from flask_sqlalchemy import SQLAlchemy
-from flask_login import LoginManager, UserMixin
+from flask_login import LoginManager, UserMixin, current_user
 import os
 # import configparser
 

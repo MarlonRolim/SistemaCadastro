@@ -81,6 +81,19 @@ def render_layout():
                                         value='razao',
                                         style={'height':'38px'}
                                     ),
+                            html.Br(),
+                            dbc.RadioItems(id="radio-selected-cadastros",
+                                            options=[
+                                                {"label": "Todos Cadastros", "value": 1},
+                                                {"label": "Meus Cadastros", "value": 2},
+                                            ],
+                                            value=1,
+                                            labelCheckedClassName="text-success",
+                                            inputCheckedClassName="border border-success bg-success",
+                                            inline=True,
+                                            style={'text-align' : 'center','height':'38px'}
+                            ),
+                            
                             dbc.Row([
                                 
                                 dbc.Col([dbc.Input(id='input_pesquisa',placeholder="pesquisa", type='text'),],width=10, style={'padding': 0, 'padding-right':'5px'}),
@@ -100,9 +113,10 @@ def render_layout():
     Output('result_pesquisa', 'children'),
     Input('btn_pesquisa','n_clicks'),
     State('select_pesquisa','value'),
-    State('input_pesquisa','value')
+    State('input_pesquisa','value'),
+    State('radio-selected-cadastros', 'value')
 )
-def pesquisa(n_clicks,select,texto):
+def pesquisa(n_clicks,select,texto, selecao):
     if n_clicks:
         #pesquisa = ''
         if select == 'CNPJ':
@@ -119,10 +133,16 @@ def pesquisa(n_clicks,select,texto):
         
         if texto == None:
             texto = ''
+        if selecao == 2:
+            df = pd.read_sql(fr"select * from cadastros where {pesquisa} ilike '%%{str(texto)}%%' and usuario = {current_user.id} order by razao asc", create_connection())
+            
+        else:
+            df = pd.read_sql(fr"select * from cadastros where {pesquisa} ilike '%%{str(texto)}%%' order by razao asc", create_connection())
         
-        df = pd.read_sql(fr"select * from cadastros where {pesquisa} ilike '%%{str(texto)}%%'", create_connection())
+        
         if len(df) == 0:
             return html.Legend('Não há resultados para essa pesquisa',style={"text-align":'center'})
+        
         
         dic = df.to_dict('index')
         

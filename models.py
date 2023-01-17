@@ -21,7 +21,8 @@ class Users(db.Model):
     username = db.Column(db.String, unique=True, nullable = False)
     name = db.Column(db.String(50), nullable = False)
     email = db.Column(db.String(50), unique=True)
-    password = db.Column(db.String(80))
+    password = db.Column(db.String)
+    user_type = db.Column(db.Integer)
 
 Users_tbl = Table('users', Users.metadata)
     
@@ -49,9 +50,12 @@ class Cadastros(db.Model):
     agencia = db.Column(db.String(4))
     conta = db.Column(db.String(10))
     dig_conta = db.Column(db.String(2))
-    usuario = db.Column(db.String(20))
+    cod_fornecedor = db.Column(db.String(6))
+    cod_loja = db.Column(db.String(2))
+    usuario = db.Column(db.Integer)
+    user_aprov = db.Column(db.Integer)
     status_cad = db.Column(db.String(10))
-    data_cad = db.Column(db.String(10))
+    data_cad = db.Column(db.Date)
     
 Cadastros_tbl = Table('cadastros', Cadastros.metadata)
 

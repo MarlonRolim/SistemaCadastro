@@ -1,4 +1,4 @@
-from dash import html, dcc
+from dash import html, dcc, callback_context
 from dash.dependencies import Input, Output, State
 import dash_bootstrap_components as dbc
 from app import *
@@ -13,29 +13,28 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import login_user, logout_user, current_user
 from dash.exceptions import PreventUpdate
 
-{
-    'cnpj' : {},
-   'cpf' : {},
-    'ie' : {},
-    'razao' : {},
-    'endereco': {},
-    'numero' : {},
-    'complemento' : {},
-    'cidade' : {},
-    'bairro' : {},
-    'estado' : {},
-    'cep' : {},
-    'nome_contato' : {},
-    'tel_com' : {},
-    'tel_cel' : {},
-    'email' : {},
-    'forma_pagamento' : {},
-    'banco' : {},
-    'n_banco' : {},
-    'tipo_conta' : {},
-    'agencia' : {},
-    'conta' : {},
-    'dig_conta' : {},
+dic_campos = {
+'cnpj' : 'CNPJ Incorreto',
+'cpf' : 'CPF Incorreto',
+'ie' : 'Incrição Estadual Incorreta',
+'razao' : 'RAZÃO Incorreta',
+'endereco' : 'ENDEREÇO Incorreto',
+'numero' : 'NÚMERO Incorreto',
+'cidade' : 'CIDADE Incorreto',
+'bairro' : 'BAIRRO Incorreto',
+'estado' : 'ESTADO Incorreto',
+'cep' : 'CEP Incorreto',
+'nome_contato' : 'NOME_CONTATO Incorreto',
+'tel_com' : 'TEL. COMERCIAL Incorreto',
+'tel_cel' : 'CELULAR Incorreto',
+'email' : 'E-MAIL Incorreto',
+'forma_pagamento' : 'Confirmar Forma de Pagamento',
+'banco' : 'BANCO Incorreto',
+'n_banco' : 'NÚMERO DO BANCO Incorreto',
+'tipo_conta' : 'Confirmar se a conta é corrente ou poupança',
+'agencia' : 'AGENCIA Incorreta',
+'conta' : 'CONTA Incorreta',
+'dig_conta' : 'DIGITO DA CONTA Incorreto',
 }
 
 estados = ['AC', 'AL', 'AM', 'AP', 'BA', 'CE', 'DF', 'ES', 'GO', 'MA', 'MG',
@@ -50,6 +49,8 @@ def render_layout(id,pagina):
     cad = cad.to_dict('index')
     cad = cad[0]
     botao_voltar = dbc.Button('Voltar', href=fr'/{pagina}',style={'width':'100%'})
+    
+    
     
     items = [
                     
@@ -177,17 +178,35 @@ def render_layout(id,pagina):
     
     
     template = html.Div([
-                            dcc.Location(id='location_altera'),
+                            dcc.Location(id='location_aprova'),
                             html.Br(),
                             botao_voltar,
                             html.Hr(),
-                            html.Legend('Editar Cadastro', style={'text-align':'center','font-size':'24px', 'color':'#14a583'}),
+                            html.Legend('Aprovar Cadastro', style={'text-align':'center','font-size':'24px', 'color':'#14a583'}),
                             html.Hr(),
                             html.Br(),
                             html.Div(items),
-                            html.Div(id='fantasma_alt'),
+                            
+                            html.Legend('Pendências', style={'text-align':'center'}),
+                            html.Br(),
+                            html.Div(
+                                dbc.Checklist(
+                                id="dropdown-pendencias",
+                                options = [{'label': i, 'value': i} for i in dic_campos],
+                                value=[],
+                                inline=True,
+                                style={"width": "100%"},)                
+                            ),
+                            html.Br(),
+                            html.Div(id='fantasma_aprova'),
                             html.Div(children=fr'{id}',id='id_fantasma',style={'display':'None'}),
-                            dbc.Button("Atualizar", id='btn_altera', style={'width': '100%'}),
+                            dbc.Button("Aprovar", id='btn_aprova', style={'width': '100%', 'background-color': '#007a37','margin-bottom': '10px'}),
+                            html.Br(),
+                            dbc.Button("Reprovar", id='btn_reprova', style={'width': '100%', 'background-color': '#C00000','margin-bottom': '10px'}),
+                            html.Br(),
+                            dbc.Button("Atualizar", id='btn_altera_aprova', style={'width': '100%','margin-bottom': '10px'}),
+                            html.Br(),
+                            dbc.Button("Cancelar", id='btn_cancela', href=fr'/{pagina}',style={'width': '100%', 'background-color': 'gray','margin-bottom': '10px'}),
                             html.Br(),
                             
                             html.Br()
@@ -197,21 +216,17 @@ def render_layout(id,pagina):
 
 # :::::::::::::::: Callbacks :::::::::::::::: #
 
-@app.callback(
-    Output('dados_bancarios','style'),
-    Input('select_pagamento','value'),
-    State('select_pagamento','value')
-)
-def banco(n_clicks,pagamento):
-    
-    if pagamento == 'Depósito':
-        return {}
-    else: return {'display':'None'}
     
 @app.callback(
-    [Output('alt-store', 'data'),
-    Output('fantasma_alt', 'children')],
-    Input('btn_altera', 'n_clicks'),
+    [
+        Output('aprova-store', 'data'),
+        Output('fantasma_aprova', 'children')
+    ],
+    [
+        Input('btn_altera_aprova', 'n_clicks'),
+        Input('btn_aprova','n_clicks'),
+        Input('btn_reprova','n_clicks')
+    ],
     [
         State('txt-cnpj', 'value'),
         State('txt-cpf', 'value'),
@@ -235,115 +250,149 @@ def banco(n_clicks,pagamento):
         State('txt-agencia', 'value'),
         State('txt-conta', 'value'),
         State('txt-dig-conta', 'value'),
-        State('id_fantasma', 'children')
-        
+        State('id_fantasma', 'children'),
+        State('dropdown-pendencias','value')
     ]
 )
-def cadastrar(n_clicks, cnpj, cpf, ie, razao, endereco, n_endereco, complemento, cidade, bairro, estado, cep, nome_contato, tel_com, tel_cel, email, form_pagamento, banco, n_banco, tipo_conta, agencia, conta, n_conta, id):
-    if n_clicks == None:
-        raise PreventUpdate
+def cadastrar(altera,aprova,reprova, cnpj, cpf, ie, razao, endereco, n_endereco, complemento, cidade, bairro, estado, cep, nome_contato, tel_com, tel_cel, email, form_pagamento, banco, n_banco, tipo_conta, agencia, conta, n_conta, id, pendencias):
     
-    if (cnpj == None and cpf == None) or (cnpj == "" and cpf == None) or (cnpj == None and cpf == "") or (cnpj == "" and cpf == ""):
-        return '',dbc.Alert('Preencha os campos CNPJ ou CPF!',color='danger')
     
-    if cpf == None:
-        cpf = ''
+    
+    trigg_id = callback_context.triggered[0]['prop_id'].split('.')[0]
+    
+    if trigg_id == 'btn_altera_aprova':
+        if altera == None :
+            raise PreventUpdate
         
-    if cnpj == None:
-        cnpj = ''
-    if ie == None or ie == "":
-        return '',dbc.Alert('Preencha a Iscrição Estadual! Se não possuir, colocar como ISENTO',color='danger')
-    
-    if razao == None or razao == "":
-        return '',dbc.Alert('Preencha a Razão Social!',color='danger')
-    
-    if endereco == None or endereco == '' or n_endereco == None or n_endereco == '' or cidade == None or cidade == '' or estado == None or estado == '' or cep == None or cep == '':
-        return '',dbc.Alert('Preencha todos os campos de endereço!',color='danger')
-    
-    if form_pagamento == 'Depósito':
-        if banco == None or banco == '' or agencia == None or agencia == '' or conta == None or conta == '' or n_conta == None or n_conta == '':
-            return '',dbc.Alert('Preencha todos os campos de Dados bancários!',color='danger')
         
-    if complemento == None:
-        complemento = ''
-    
-    if bairro == None:
-        bairro = ''
-    
-    if nome_contato == None:
-        nome_contato = ''
-    
-    if tel_com == None:
-        tel_com = ''
         
-    if tel_cel == None:
-        tel_cel = ''
+        if (cnpj == None and cpf == None) or (cnpj == "" and cpf == None) or (cnpj == None and cpf == "") or (cnpj == "" and cpf == ""):
+            return '',dbc.Alert('Preencha os campos CNPJ ou CPF!',color='danger')
         
-    if email == None:
-        email = ''
+        if cpf == None:
+            cpf = ''
+            
+        if cnpj == None:
+            cnpj = ''
+        if ie == None or ie == "":
+            return '',dbc.Alert('Preencha a Iscrição Estadual! Se não possuir, colocar como ISENTO',color='danger')
         
-    if banco == None:
-        banco = ''
+        if razao == None or razao == "":
+            return '',dbc.Alert('Preencha a Razão Social!',color='danger')
+        
+        if endereco == None or endereco == '' or n_endereco == None or n_endereco == '' or cidade == None or cidade == '' or estado == None or estado == '' or cep == None or cep == '':
+            return '',dbc.Alert('Preencha todos os campos de endereço!',color='danger')
+        
+        if form_pagamento == 'Depósito':
+            if banco == None or banco == '' or agencia == None or agencia == '' or conta == None or conta == '' or n_conta == None or n_conta == '':
+                return '',dbc.Alert('Preencha todos os campos de Dados bancários!',color='danger')
+            
+        if complemento == None:
+            complemento = ''
+        
+        if bairro == None:
+            bairro = ''
+        
+        if nome_contato == None:
+            nome_contato = ''
+        
+        if tel_com == None:
+            tel_com = ''
+            
+        if tel_cel == None:
+            tel_cel = ''
+            
+        if email == None:
+            email = ''
+            
+        if banco == None:
+            banco = ''
+        
+        if n_banco == None:
+            n_banco = ''
+        
+        if form_pagamento == "Cheque":
+            tipo_conta == ''
+        
+        
+        if agencia == None:
+            agencia = ''
+        
+        if conta == None:
+            conta = ''
+        
+        if n_conta == None:
+            n_conta = ''
+        
+        ins = Cadastros_tbl.update().where(Cadastros_tbl.c.id==id).values(
+                                        
+                                        cnpj = str(cnpj),
+                                        cpf = str(cpf),
+                                        ie = str(ie),
+                                        razao = str(razao),
+                                        endereco = str(endereco),
+                                        numero = str(n_endereco),
+                                        complemento = str(complemento),
+                                        cidade = str(cidade),
+                                        bairro = str(bairro),
+                                        estado = str(estado),
+                                        cep = str(cep),
+                                        nome_contato = str(nome_contato),
+                                        tel_com = str(tel_com),
+                                        tel_cel = str(tel_cel),
+                                        email = str(email),
+                                        forma_pagamento = str(form_pagamento),
+                                        banco = str(banco),
+                                        n_banco = str(n_banco),
+                                        tipo_conta = str(tipo_conta),
+                                        agencia = str(agencia),
+                                        conta = str(conta),
+                                        dig_conta = str(n_conta),
+                                        status_cad = "Pendente",
+                                        )
+        conn = engine.connect()
+        conn.execute(ins)
+        conn.close()
+        
+        return '',dbc.Alert('Alterado',color='#23a6d5')
     
-    if n_banco == None:
-        n_banco = ''
+    if trigg_id == 'btn_aprova':
+        if aprova == None:
+            raise PreventUpdate
+        
+        ins = Cadastros_tbl.update().where(Cadastros_tbl.c.id==id).values(status_cad = "Completo",
+                                                                          user_aprov = current_user.id)
+        conn = engine.connect()
+        conn.execute(ins)
+        conn.close()
+
+        return 'Sucesso', ""
     
-    if form_pagamento == "Cheque":
-        tipo_conta == ''
+    if trigg_id == 'btn_reprova':
+        if reprova == None:
+            raise PreventUpdate
+        
+        for i in pendencias:
+            ins = Pendencias_tbl.insert().values(
+                                                    id_cadastro = id,
+                                                    id_item = i,
+                                                    observacao = dic_campos[i]
+                                                )
+            conn = engine.connect()
+            conn.execute(ins)
+            conn.close()
+        ins = Cadastros_tbl.update().where(Cadastros_tbl.c.id==id).values(status_cad = "Incompleto",
+                                                                           user_aprov = current_user.id)
+        conn = engine.connect()
+        conn.execute(ins)
+        conn.close()
+        return 'Sucesso', ""
     
-    
-    if agencia == None:
-        agencia = ''
-    
-    if conta == None:
-        conta = ''
-    
-    if n_conta == None:
-        n_conta = ''
-    
-    ins = Cadastros_tbl.update().where(Cadastros_tbl.c.id==id).values(
-                                    
-                                    cnpj = str(cnpj),
-                                    cpf = str(cpf),
-                                    ie = str(ie),
-                                    razao = str(razao),
-                                    endereco = str(endereco),
-                                    numero = str(n_endereco),
-                                    complemento = str(complemento),
-                                    cidade = str(cidade),
-                                    bairro = str(bairro),
-                                    estado = str(estado),
-                                    cep = str(cep),
-                                    nome_contato = str(nome_contato),
-                                    tel_com = str(tel_com),
-                                    tel_cel = str(tel_cel),
-                                    email = str(email),
-                                    forma_pagamento = str(form_pagamento),
-                                    banco = str(banco),
-                                    n_banco = str(n_banco),
-                                    tipo_conta = str(tipo_conta),
-                                    agencia = str(agencia),
-                                    conta = str(conta),
-                                    dig_conta = str(n_conta),
-                                    usuario = current_user.id,
-                                    status_cad = "Pendente",
-                                    )
-    conn = engine.connect()
-    conn.execute(ins)
-    conn.close()
-    
-    ins = Pendencias_tbl.delete().where(Pendencias_tbl.c.id_cadastro==id)
-    conn = engine.connect()
-    conn.execute(ins)
-    conn.close()
-    return 'Sucesso',''
-    
-    
-    
+        
 @app.callback(
-    Output('location_altera', 'pathname'),
-    Input('alt-store', 'data'),
-    State('alt-store', 'data')
+    Output('location_aprova', 'pathname'),
+    Input('aprova-store', 'data'),
+    State('aprova-store', 'data')
 )
 def sucesso(trig, data):
     if data == "Sucesso":
