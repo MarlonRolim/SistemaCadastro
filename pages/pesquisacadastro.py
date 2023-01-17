@@ -62,7 +62,7 @@ def card_cadastro(cadastro):
                                     ],width=5)
                                 ]),
                     ], style={"padding-left": "10px", "padding-top": "5px", 'height':'135px', 'width':'95%'}),
-                    dbc.Card(dbc.Button(html.Div(className="fa fa-angle-right", style=card_icon),id={'type': 'pendencias_cadastro', 'index': id}, href=fr'/cadpendaprovacao/aprovarcadastro/{id}', color='link', style=card_icon),
+                    dbc.Card(dbc.Button(html.Div(className="fa fa-angle-right", style=card_icon),id={'type': 'pendencias_cadastro', 'index': id}, href=fr'/pesquisacadastro/visualizar/{id}', color='link', style=card_icon),
                         color="success",
                         style=card_right,
                     )
