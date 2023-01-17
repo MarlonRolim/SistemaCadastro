@@ -38,7 +38,7 @@ def card_cadastro(cadastro):
     card_group_css['height'] = '110px'
     template = html.Div(dbc.CardGroup([
                     dbc.Card([
-                                html.Legend(nome, style={'margin-bottom':'0', 'color':'#14a583', 'font-weight':'bold','font-size':'18px'}),
+                                html.Legend(nome, style={'margin-bottom':'0', 'color':'#14a583', 'font-weight':'bold','font-size':'16px'}),
                                 dbc.Row([
                                     dbc.Col([
                                         dbc.Label(fr'CNPJ: {cnpj}', style={'margin':'0','padding':'0','font-size':'12px'}),
@@ -48,6 +48,7 @@ def card_cadastro(cadastro):
                                         dbc.Label(fr'I.E.: {ie}', style={'margin':'0','padding':'0','font-size':'12px'}),
                                     ],width=7),
                                     dbc.Col([
+                                        html.Br(),
                                         html.Legend('Status', style={'text-align':'center', 'margin-bottom':'0','font-size':'18px'}),
                                         html.Legend(status, style={'color': corStatus(status),'font-weight':'bold', 'text-align':'center','font-size':'14px'})
                                     ],width=5)

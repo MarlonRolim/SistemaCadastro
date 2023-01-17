@@ -35,16 +35,16 @@ def card_cadastro(cadastro):
     cnpj = cadastro['cnpj']
     cpf = cadastro['cpf']
     ie = cadastro['ie']
+    user = cadastro['name']
     status = cadastro['status_cad']
-    card_right['height'] = '110px'
+    card_right['height'] = '135px'
     card_icon['color'] = 'white'
     card_right["maxWidth"]= 30
     card_right['width']=25
-    card_group_css['height'] = '110px'
-    
+    card_group_css['height'] = '135px'
     template = html.Div(dbc.CardGroup([
                     dbc.Card([
-                                html.Legend(nome, style={'margin-bottom':'0', 'color':'#14a583', 'font-weight':'bold','font-size':'18px'}),
+                                html.Legend(nome, style={'margin-bottom':'0', 'color':'#14a583', 'font-weight':'bold','font-size':'16px'}),
                                 dbc.Row([
                                     dbc.Col([
                                         dbc.Label(fr'CNPJ: {cnpj}', style={'margin':'0','padding':'0','font-size':'12px'}),
@@ -52,18 +52,21 @@ def card_cadastro(cadastro):
                                         dbc.Label(fr'CPF: {cpf}', style={'margin':'0','padding':'0','font-size':'12px'}),
                                          html.Br(),
                                         dbc.Label(fr'I.E.: {ie}', style={'margin':'0','padding':'0','font-size':'12px'}),
+                                        html.Br(),
+                                        dbc.Label(fr'SOLICITANTE: {user}', style={'margin':'0','padding':'0','font-size':'12px'}),
                                     ],width=7),
                                     dbc.Col([
+                                        html.Br(),
                                         html.Legend('Status', style={'text-align':'center', 'margin-bottom':'0','font-size':'18px'}),
                                         html.Legend(status, style={'color': corStatus(status),'font-weight':'bold', 'text-align':'center','font-size':'14px'})
                                     ],width=5)
-                                ])
-                                ], style={"padding-left": "10px", "padding-top": "5px", 'height':'110px', 'width':'95%'}),
-                    dbc.Card(dbc.Button(html.Div(className="fa fa-angle-right", style=card_icon),id='btn-altera', href=fr'/pesquisacadastro/visualizar/{id}', color='link', style=card_icon),
+                                ]),
+                    ], style={"padding-left": "10px", "padding-top": "5px", 'height':'135px', 'width':'95%'}),
+                    dbc.Card(dbc.Button(html.Div(className="fa fa-angle-right", style=card_icon),id={'type': 'pendencias_cadastro', 'index': id}, href=fr'/cadpendaprovacao/aprovarcadastro/{id}', color='link', style=card_icon),
                         color="success",
                         style=card_right,
                     )
-                ],style=card_group_css),style={'margin-bottom': '10px'})
+                ],style=card_group_css),id=fr"{nome}-{id}",style={'margin-bottom': '10px'})
   
 
     return template
@@ -134,10 +137,10 @@ def pesquisa(n_clicks,select,texto, selecao):
         if texto == None:
             texto = ''
         if selecao == 2:
-            df = pd.read_sql(fr"select * from cadastros where {pesquisa} ilike '%%{str(texto)}%%' and usuario = {current_user.id} order by razao asc", create_connection())
+            df = pd.read_sql(fr"select * , u.name from cadastros c left join users u on c.usuario=u.id where {pesquisa} ilike '%%{str(texto)}%%' and usuario = {current_user.id} order by razao asc", create_connection())
             
         else:
-            df = pd.read_sql(fr"select * from cadastros where {pesquisa} ilike '%%{str(texto)}%%' order by razao asc", create_connection())
+            df = pd.read_sql(fr"select * , u.name from cadastros c left join users u on c.usuario=u.id where {pesquisa} ilike '%%{str(texto)}%%' order by razao asc", create_connection())
         
         
         if len(df) == 0:
