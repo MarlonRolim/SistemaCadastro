@@ -48,7 +48,6 @@ def card_cadastro(cadastro):
                                         dbc.Label(fr'I.E.: {ie}', style={'margin':'0','padding':'0','font-size':'12px'}),
                                     ],width=7),
                                     dbc.Col([
-                                        html.Br(),
                                         html.Legend('Status', style={'text-align':'center', 'margin-bottom':'0','font-size':'18px'}),
                                         html.Legend(status, style={'color': corStatus(status),'font-weight':'bold', 'text-align':'center','font-size':'14px'})
                                     ],width=5)
@@ -135,5 +134,6 @@ def abrir_modal_pendencias(n_click,is_open):
                 lista = []
                 for i in dic: 
                     lista.append(html.Label(dic[i]['observacao'],style={'color':'red'}))
+                    lista.append(html.Br())
                 return not is_open, lista, btns
     return is_open, "", ""
