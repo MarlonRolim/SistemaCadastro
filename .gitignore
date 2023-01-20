@@ -2,3 +2,4 @@ instance
 __pycache__
 venv
 create_database.py
+fornecedores.csv

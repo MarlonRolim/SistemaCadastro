@@ -74,7 +74,7 @@ def render_layout():
                             
                     ],style={'--bs-gutter-x': '0'}),
                     html.Div([
-                            
+                            html.Script(src='src="https://cdnjs.cloudflare.com/ajax/libs/jquery.mask/1.14.16/jquery.mask.min.js'),
                             dcc.Store(id='login-state',data=''),
                             dcc.Store(id='register-state',data=''),
                             dcc.Store(id='cad-store', data=''),

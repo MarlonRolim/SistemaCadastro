@@ -8,7 +8,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, UserMixin, current_user
 import os
 # import configparser
-
+import re
 
 from models import *
 
@@ -20,9 +20,10 @@ dbc_css = "https://cdn.jsdelivr.net/gh/AnnMarieW/dash-bootstrap-templates@V1.0.4
 
 
 app = dash.Dash(__name__, external_stylesheets=estilos + [dbc_css], meta_tags=[
-        {"name": "viewport", "content": "width=device-width, initial-scale=1"},
-        
-    ],title='Cadastros RB')
+        {"name": "viewport", "content": "width=device-width, initial-scale=1"}],
+                external_scripts=['/assets/js/mascaras.js'],
+                assets_folder='assets',
+                title='Cadastros RB')
 app._favicon = ("assets/favicon.ico")
 server = app.server
 app.config.suppress_callback_exceptions = True

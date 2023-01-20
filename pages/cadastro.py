@@ -58,10 +58,10 @@ def render_layout():
                     html.Legend('Cadastro de Fornecedor', style={'text-align':'center'}),
                     html.Hr(),
                     dbc.Label('CNPJ: '),
-                    dbc.Input(placeholder='__.___.___/____.__', type="text", minLength=14, maxLength=14, id='txt-cnpj'),
+                    dbc.Input(placeholder='__.___.___/____.__', type="text", minLength=14, maxLength=14, id='txt-cnpj', className='cnpj'),
                     
                     dbc.Label('CPF: '),
-                    dbc.Input(placeholder='___.___.___-__', type="text", minLength=11, maxLength=11, id='txt-cpf'),
+                    dbc.Input(placeholder='___.___.___-__', type="text", minLength=11, maxLength=11, id='txt-cpf', className='cpf'),
                     
                     dbc.Label('I.E: '),
                     dbc.Input(placeholder='', type="text", id='txt-inscricao'),
@@ -73,12 +73,12 @@ def render_layout():
                     
                     html.Legend('Localização', style={'text-align':'center'}),
                     dbc.Label('Endereço: '),
-                    dbc.Input(placeholder='Rua ......', type="text", id='txt-endereco'),
+                    dbc.Input(placeholder='', type="text", id='txt-endereco'),
                     dbc.Row([
                         
                         dbc.Col([
                             dbc.Label('Número: '),
-                            dbc.Input(placeholder='Ex: 1665...', type="text", id='txt-end-numero'),
+                            dbc.Input(placeholder='Ex: 1665 ou S/N', type="text", id='txt-end-numero'),
                         ], width=6, style={'padding-right': '10px'}),
                         
                         dbc.Col([
@@ -89,10 +89,10 @@ def render_layout():
                     ],style={'padding-top': '10px'}),  
                     
                     dbc.Label('Cidade: '),
-                    dbc.Input(placeholder='Ex: Avaré, São Paulo...', type="text", id='txt-cidade'),
+                    dbc.Input(placeholder='Ex: Avaré, São Paulo', type="text", id='txt-cidade'),
                     
                     dbc.Label('Bairro: '),
-                    dbc.Input(placeholder='Ex: Santa Cecilia....', type="text", id='txt-bairro'),
+                    dbc.Input(placeholder='Ex: Rural', type="text", id='txt-bairro'),
                     
                     
                     dbc.Row([
@@ -104,7 +104,7 @@ def render_layout():
                         ],width=6, style={'padding-right': '10px'}),
                         dbc.Col([
                             dbc.Label('CEP: '),
-                            dbc.Input(placeholder='#####-###', type="text", id='txt-cep'),
+                            dbc.Input(placeholder='_____-___', type="text", id='txt-cep'),
                         ], width=6),
                         
                     ],style={'padding-top': '10px'}),
@@ -121,11 +121,11 @@ def render_layout():
                         
                         dbc.Col([
                             dbc.Label('Tel. Comercial: '),
-                            dbc.Input(placeholder='(##) ##########', type="text", id='txt-tel-comercial'),
+                            dbc.Input(placeholder='(__) _________', type="text", id='txt-tel-comercial'),
                         ],width=6, style={'padding-right': '10px'}),
                         dbc.Col([
                             dbc.Label('Celular: '),
-                            dbc.Input(placeholder='(##) ##########', type="text", id='txt-celular'),
+                            dbc.Input(placeholder='(__) _________', type="text", id='txt-celular'),
                         ], width=6),
                         
                         
@@ -178,8 +178,11 @@ def render_layout():
                     dbc.Button("Cadastrar", id='btn_cadastro', style={'width': '100%'}),
                     html.Br(),
                     
-                    html.Br()
-                    
+                    html.Br(),
+                    html.Script('''$(document).ready(function(){
+  $('.cpf').mask('000.000.000-00', {reverse: true});
+  $('.cnpj').mask('00.000.000/0000-00', {reverse: true});
+});''')
                 ], style={'widht':'100%', 'height': '100%', 'background-color':'white', 'padding-left': '10px', 'padding-right': '10px'})
     return template
 
@@ -322,7 +325,38 @@ def cadastrar(n_clicks, cnpj, cpf, ie, razao, endereco, n_endereco, complemento,
     
     return 'Sucesso',''
     
-    
+@app.callback(
+    Output(component_id='txt-cpf', component_property='value'),
+    [Input(component_id='txt-cpf', component_property='value')]
+)
+
+def format_cpf(cpf):
+    if cpf == None:
+        raise PreventUpdate
+    cpf = re.sub(r'(\d{3})(\d{3})(\d{3})(\d{2})', r'\1.\2.\3-\4', cpf)
+    return cpf
+
+@app.callback(
+    Output(component_id='txt-cnpj', component_property='value'),
+    [Input(component_id='txt-cnpj', component_property='value')]
+)
+
+def format_cnpj(cnpj):
+    if cnpj == None:
+        raise PreventUpdate
+    cnpj = re.sub(r'(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})', r'\1.\2.\3/\4-\5', cnpj)
+    return cnpj
+
+@app.callback(
+    Output(component_id='txt-cep', component_property='value'),
+    [Input(component_id='txt-cep', component_property='value')]
+)
+
+def format_cep(cep):
+    if cep == None:
+        raise PreventUpdate
+    cep = re.sub(r'(\d{5})(\d{3})', r'\1-\2', cep)
+    return cep
     
 @app.callback(
     Output('location_cad', 'pathname'),

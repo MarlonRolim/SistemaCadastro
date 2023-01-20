@@ -55,6 +55,23 @@ def render_layout(id,pagina):
                     dbc.Label(solicitante),
                     html.Br(),
                     
+                    
+                    dbc.Row([
+                        
+                        dbc.Col([
+                            dbc.Label('Cod. Fornecedor: ', style={'font-size':'18px', 'color':'#14a583'}),
+                            html.Br(),
+                            dbc.Label(dic['cod_fornecedor']),
+                        ], width=6, style={'padding-right': '10px'}),
+                        
+                        dbc.Col([
+                            dbc.Label('Cod. Loja: ', style={'font-size':'18px', 'color':'#14a583'}),
+                            html.Br(),
+                            dbc.Label(dic['cod_loja']),
+                        ], width=6),
+                        
+                    ],style={'padding-top': '10px'}),
+                    
                     dbc.Label('CNPJ: ', style={'font-size':'18px', 'color':'#14a583'}),
                     html.Br(),
                     dbc.Label(dic['cnpj']),

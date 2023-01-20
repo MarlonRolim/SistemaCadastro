@@ -50,3 +50,16 @@ card_icon_menu = {
                     "margin": 'auto',
                     'align-items':'center',
                 }
+
+
+mascaras_js = '''
+// Adicionando máscara de CPF
+document.getElementById('cpf').addEventListener('input', function () {
+  this.value = this.value.replace(/\D/g, '').replace(/(\d{3})(\d)/, '$1.$2').replace(/(\d{3})(\d)/, '$1.$2').replace(/(\d{3})(\d{1,2})/, '$1-$2');
+});
+
+// Adicionando máscara de CNPJ
+document.getElementById('cnpj').addEventListener('input', function () {
+  this.value = this.value.replace(/\D/g, '').replace(/(\d{2})(\d)/, '$1.$2').replace(/(\d{3})(\d)/, '$1.$2').replace(/(\d{3})(\d)/, '$1/$2').replace(/(\d{4})(\d{1,2})/, '$1-$2');
+});
+'''

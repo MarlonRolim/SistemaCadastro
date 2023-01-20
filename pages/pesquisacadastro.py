@@ -31,6 +31,8 @@ def corStatus(status):
 
 def card_cadastro(cadastro):
     id = cadastro['id']
+    cod = cadastro['cod_fornecedor']
+    loja = cadastro['cod_loja']
     nome = cadastro['razao']
     cnpj = cadastro['cnpj']
     cpf = cadastro['cpf']
@@ -44,7 +46,7 @@ def card_cadastro(cadastro):
     card_group_css['height'] = '135px'
     template = html.Div(dbc.CardGroup([
                     dbc.Card([
-                                html.Legend(nome, style={'margin-bottom':'0', 'color':'#14a583', 'font-weight':'bold','font-size':'16px'}),
+                                html.Legend(fr"{cod}/{loja} - {nome}", style={'margin-bottom':'0', 'color':'#14a583', 'font-weight':'bold','font-size':'14px','overflow': 'hidden', 'text-overflow': 'ellipsis','white-space': 'nowrap'}),
                                 dbc.Row([
                                     dbc.Col([
                                         dbc.Label(fr'CNPJ: {cnpj}', style={'margin':'0','padding':'0','font-size':'12px'}),
@@ -137,10 +139,10 @@ def pesquisa(n_clicks,select,texto, selecao):
         if texto == None:
             texto = ''
         if selecao == 2:
-            df = pd.read_sql(fr"select * , u.name from cadastros c left join users u on c.usuario=u.id where {pesquisa} ilike '%%{str(texto)}%%' and usuario = {current_user.id} order by razao asc", create_connection())
+            df = pd.read_sql(fr"select c.* , u.name from cadastros c left join users u on c.usuario=u.id where {pesquisa} ilike '%%{str(texto)}%%' and usuario = {current_user.id} order by razao asc", create_connection())
             
         else:
-            df = pd.read_sql(fr"select * , u.name from cadastros c left join users u on c.usuario=u.id where {pesquisa} ilike '%%{str(texto)}%%' order by razao asc", create_connection())
+            df = pd.read_sql(fr"select c.* , u.name from cadastros c left join users u on c.usuario=u.id where {pesquisa} ilike '%%{str(texto)}%%' order by razao asc", create_connection())
         
         
         if len(df) == 0:

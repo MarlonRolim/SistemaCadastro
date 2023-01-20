@@ -27,6 +27,8 @@ def corStatus(status):
 def card_cadastro(cadastro):
     id = cadastro['id']
     nome = cadastro['razao']
+    cod = cadastro['cod_fornecedor']
+    loja = cadastro['cod_loja']
     cnpj = cadastro['cnpj']
     cpf = cadastro['cpf']
     ie = cadastro['ie']
@@ -39,7 +41,7 @@ def card_cadastro(cadastro):
     card_group_css['height'] = '135px'
     template = html.Div(dbc.CardGroup([
                     dbc.Card([
-                                html.Legend(nome, style={'margin-bottom':'0', 'color':'#14a583', 'font-weight':'bold','font-size':'16px'}),
+                                html.Legend(fr"{cod}/{loja} - {nome}", style={'margin-bottom':'0', 'color':'#14a583', 'font-weight':'bold','font-size':'14px','overflow': 'hidden', 'text-overflow': 'ellipsis','white-space': 'nowrap'}),
                                 dbc.Row([
                                     dbc.Col([
                                         dbc.Label(fr'CNPJ: {cnpj}', style={'margin':'0','padding':'0','font-size':'12px'}),
