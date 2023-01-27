@@ -1,18 +1,6 @@
-from dash import html, dcc
-from dash.dependencies import Input, Output, State, ALL
-import dash_bootstrap_components as dbc
+
 from app import *
 
-import numpy as np
-import pandas as pd
-import plotly.express as px
-import plotly.graph_objects as go
-from dash_bootstrap_templates import load_figure_template
-
-from werkzeug.security import generate_password_hash, check_password_hash
-from flask_login import login_user, logout_user, current_user
-from dash.exceptions import PreventUpdate
-import json
 from pages.styles import *
 
 
@@ -59,7 +47,7 @@ def card_cadastro(cadastro):
                                     ],width=5)
                                 ]),
                     ], style={"padding-left": "10px", "padding-top": "5px", 'height':'135px', 'width':'95%'}),
-                    dbc.Card(dbc.Button(html.Div(className="fa fa-angle-right", style=card_icon),id={'type': 'pendencias_cadastro', 'index': id}, href=fr'/cadpendaprovacao/aprovarcadastro/{id}', color='link', style=card_icon),
+                    dbc.Card(dbc.Button(html.Div(className="fa fa-angle-right", style=card_icon),id={'type': 'pendencias_cadastro', 'index': id}, href=fr'/app/cadpendaprovacao/aprovarcadastro/{id}', color='link', style=card_icon),
                         color="success",
                         style=card_right,
                     )
@@ -96,39 +84,3 @@ def render_layout():
     return template
 
 # ================ Callbacks ================ #
-'''
-@app.callback(
-    Output('modal-sm','is_open'),
-    Output('pendencias_modal','children'),
-    Output('btns_footer','children'),
-    Input({'type': 'pendencias_cadastro', 'index': ALL}, 'n_clicks'),
-    State('modal-sm', 'is_open')
-)
-def abrir_modal_pendencias(n_click,is_open):
-    if n_click == None:
-        raise PreventUpdate
-    if n_click:
-        ctx = dash.callback_context
-        trigg_id = ctx.triggered[0]['prop_id'].split('.')[0]
-        if trigg_id == None or trigg_id == '':
-            return is_open,"",""
-        else:
-            trigg_id_dict = json.loads(trigg_id)
-            id_cadastro = trigg_id_dict['index']
-            df = pd.read_sql(fr"select * from pendencias where id_cadastro = '{id_cadastro}'", create_connection())
-            btns = dbc.Row([
-                                dbc.Col(dbc.Button("Visualizar",href=fr'/cadastrospendentes/visualizar/{id_cadastro}', style={'width':'100%'}), width=6),
-                                dbc.Col(dbc.Button("Editar",href=f'/cadastrospendentes/alteracadastro/{id_cadastro}', style={'width':'100%'}), width=6),
-                            ],style={'width':'100%','padding':'0', 'margin':'0'})
-                    
-            if len(df) == 0:
-                
-                return not is_open, "Aguardando Aprovação", btns
-            else:
-                dic = df.to_dict('index')
-                lista = []
-                for i in dic: 
-                    lista.append(html.Label(dic[i]['observacao'],style={'color':'red'}))
-                return not is_open, lista, btns
-    return is_open, "", ""
-'''

@@ -56,6 +56,11 @@ class Cadastros(db.Model):
     user_aprov = db.Column(db.Integer)
     status_cad = db.Column(db.String(10))
     data_cad = db.Column(db.Date)
+    fazenda = db.Column(db.String)
+    area = db.Column(db.String)
+    proprietario = db.Column(db.String)
+    arvores = db.Column(db.String)
+    faces = db.Column(db.String)
     
 Cadastros_tbl = Table('cadastros', Cadastros.metadata)
 

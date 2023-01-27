@@ -1,17 +1,6 @@
-from dash import html, dcc, callback_context
-from dash.dependencies import Input, Output, State
-import dash_bootstrap_components as dbc
+
 from app import *
 
-import numpy as np
-import pandas as pd
-import plotly.express as px
-import plotly.graph_objects as go
-from dash_bootstrap_templates import load_figure_template
-
-from werkzeug.security import generate_password_hash, check_password_hash
-from flask_login import login_user, logout_user, current_user
-from dash.exceptions import PreventUpdate
 
 dic_campos = {
 'cnpj' : 'CNPJ Incorreto',
@@ -37,9 +26,9 @@ dic_campos = {
 'dig_conta' : 'DIGITO DA CONTA Incorreto',
 }
 
-estados = ['AC', 'AL', 'AM', 'AP', 'BA', 'CE', 'DF', 'ES', 'GO', 'MA', 'MG',
+estados = ('AC', 'AL', 'AM', 'AP', 'BA', 'CE', 'DF', 'ES', 'GO', 'MA', 'MG',
        'MS', 'MT', 'PA', 'PB', 'PE', 'PI', 'PR', 'RJ', 'RN', 'RO', 'RR',
-       'RS', 'SC', 'SE', 'SP', 'TO']
+       'RS', 'SC', 'SE', 'SP', 'TO')
 # :::::::::::::::: Layout :::::::::::::::: #
 
 def render_layout(id,pagina):
@@ -48,7 +37,7 @@ def render_layout(id,pagina):
     cad = pd.read_sql(fr"select * from cadastros where id = '{id}'",create_connection())
     cad = cad.to_dict('index')
     cad = cad[0]
-    botao_voltar = dbc.Button('Voltar', href=fr'/{pagina}',style={'width':'100%'})
+    botao_voltar = dbc.Button('Voltar', href=fr'/app/{pagina}',style={'width':'100%'})
     
     
     
@@ -65,6 +54,27 @@ def render_layout(id,pagina):
                     
                     dbc.Label('Razão Social: '),
                     dbc.Input(value=cad['razao'],placeholder='', type="text", id='txt-razao'),
+                    
+                    
+                    dbc.Label('Nome do Sitio/Fazenda: '),
+                    dbc.Input(value=cad['fazenda'],placeholder='', type="text", id='txt-fazenda'),
+                    
+                    dbc.Label('Tipo de Área: '),
+                    dbc.Select(id='select_area', 
+                            options=[{'label': "Própria", 'value': "Propria"},{'label': "Arrendamento", 'value': "Arrendamento"}],
+                            value=cad['area']),
+                    html.Br(),
+                    html.Div([
+                            dbc.Label('Nome do Proprietário: '),
+                            dbc.Input(value=cad['proprietario'],placeholder='', type="text", id='txt-proprietario'),
+                    ], id="div_arrend", style={'display':'None'}),
+                   
+                    dbc.Label('Quantidade de Árvores: '),
+                    dbc.Input(value=cad['arvores'],placeholder='', type="number", id='txt-arvores'),
+                    
+                    dbc.Label('Quantidade de Faces Estriadas: '),
+                    dbc.Input(value=cad['faces'],placeholder='', type="number", id='txt-faces'),
+
                     
                     html.Hr(),
                     
@@ -206,7 +216,7 @@ def render_layout(id,pagina):
                             html.Br(),
                             dbc.Button("Atualizar", id='btn_altera_aprova', style={'width': '100%','margin-bottom': '10px'}),
                             html.Br(),
-                            dbc.Button("Cancelar", id='btn_cancela', href=fr'/{pagina}',style={'width': '100%', 'background-color': 'gray','margin-bottom': '10px'}),
+                            dbc.Button("Cancelar", id='btn_cancela', href=fr'/app/{pagina}',style={'width': '100%', 'background-color': 'gray','margin-bottom': '10px'}),
                             html.Br(),
                             
                             html.Br()
@@ -251,12 +261,21 @@ def render_layout(id,pagina):
         State('txt-conta', 'value'),
         State('txt-dig-conta', 'value'),
         State('id_fantasma', 'children'),
-        State('dropdown-pendencias','value')
+        State('dropdown-pendencias','value'),
+        State('txt-fazenda', 'value'),
+        State('select_area', 'value'),
+        State('txt-proprietario', 'value'),
+        State('txt-arvores', 'value'),
+        State('txt-faces', 'value'),
     ]
 )
-def cadastrar(altera,aprova,reprova, cnpj, cpf, ie, razao, endereco, n_endereco, complemento, cidade, bairro, estado, cep, nome_contato, tel_com, tel_cel, email, form_pagamento, banco, n_banco, tipo_conta, agencia, conta, n_conta, id, pendencias):
+def cadastrar(altera,aprova,reprova, cnpj, cpf, ie, razao, endereco, n_endereco, complemento, cidade, bairro, estado, cep, nome_contato, tel_com, tel_cel, email, form_pagamento, banco, n_banco, tipo_conta, agencia, conta, n_conta, id, pendencias,fazenda, area, proprietario, arvores, faces):
+    df = pd.read_sql(fr"select * from cadastros where id = '{id}'", create_connection())
     
-    
+    df['data_cad'] = pd.to_datetime(df['data_cad']).dt.strftime(f'%d/%m/%Y')
+    dic = df.to_dict('index')
+    dic = dic[0]
+    id_user =  dic["usuario"]
     
     trigg_id = callback_context.triggered[0]['prop_id'].split('.')[0]
     
@@ -279,6 +298,23 @@ def cadastrar(altera,aprova,reprova, cnpj, cpf, ie, razao, endereco, n_endereco,
         
         if razao == None or razao == "":
             return '',dbc.Alert('Preencha a Razão Social!',color='danger')
+        
+        if fazenda == None or fazenda == "":
+            return '',dbc.Alert('Preencha a o Sitio/Fazenda!',color='danger')
+
+        if area == None or area == "":
+            return '',dbc.Alert('Preencha o tipo de Área!',color='danger')
+
+        if area == "Arrendamento" and (proprietario == None or proprietario == ""):
+            return '',dbc.Alert('Preencha o Nome do Proprietário!',color='danger')
+
+        if arvores == None or arvores == "":
+            return '',dbc.Alert('Preencha a Quantidade de Árvores!',color='danger')
+        if faces == None or faces == "":
+            return '',dbc.Alert('Preencha a Quantidade de Faces estriadas!',color='danger')
+
+        if proprietario == None:
+            proprietario = ''
         
         if endereco == None or endereco == '' or n_endereco == None or n_endereco == '' or cidade == None or cidade == '' or estado == None or estado == '' or cep == None or cep == '':
             return '',dbc.Alert('Preencha todos os campos de endereço!',color='danger')
@@ -348,6 +384,11 @@ def cadastrar(altera,aprova,reprova, cnpj, cpf, ie, razao, endereco, n_endereco,
                                         agencia = str(agencia),
                                         conta = str(conta),
                                         dig_conta = str(n_conta),
+                                        fazenda = fazenda,
+                                        area = area,
+                                        proprietario = proprietario,
+                                        arvores = arvores,
+                                        faces = faces,
                                         status_cad = "Pendente",
                                         )
         conn = engine.connect()
@@ -365,6 +406,9 @@ def cadastrar(altera,aprova,reprova, cnpj, cpf, ie, razao, endereco, n_endereco,
         conn = engine.connect()
         conn.execute(ins)
         conn.close()
+        mensagem = fr"""Cadastro Aprovado
+{razao}"""
+        enviar_notificacao(id_notificacao(id_user), mensagem)
 
         return 'Sucesso', ""
     
@@ -381,11 +425,17 @@ def cadastrar(altera,aprova,reprova, cnpj, cpf, ie, razao, endereco, n_endereco,
             conn = engine.connect()
             conn.execute(ins)
             conn.close()
+            
         ins = Cadastros_tbl.update().where(Cadastros_tbl.c.id==id).values(status_cad = "Incompleto",
                                                                            user_aprov = current_user.id)
         conn = engine.connect()
         conn.execute(ins)
         conn.close()
+        
+        mensagem = fr"""Cadastro Reprovado
+{razao}"""
+        enviar_notificacao(id_notificacao(id_user), mensagem)
+        
         return 'Sucesso', ""
     
         
@@ -396,4 +446,4 @@ def cadastrar(altera,aprova,reprova, cnpj, cpf, ie, razao, endereco, n_endereco,
 )
 def sucesso(trig, data):
     if data == "Sucesso":
-        return '/sucesso'
+        return '/app/sucesso'

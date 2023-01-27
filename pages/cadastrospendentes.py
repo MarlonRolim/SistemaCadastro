@@ -1,18 +1,4 @@
-from dash import html, dcc
-from dash.dependencies import Input, Output, State, ALL
-import dash_bootstrap_components as dbc
 from app import *
-
-import numpy as np
-import pandas as pd
-import plotly.express as px
-import plotly.graph_objects as go
-from dash_bootstrap_templates import load_figure_template
-
-from werkzeug.security import generate_password_hash, check_password_hash
-from flask_login import login_user, logout_user, current_user
-from dash.exceptions import PreventUpdate
-import json
 from pages.styles import *
 
 
@@ -66,19 +52,13 @@ def card_cadastro(cadastro):
 
 def preencher_Cadastros(nomes):
     x = []
-    for i in nomes: 
-        if (nomes[i]['status_cad'] == "Incompleto") or nomes[i]['status_cad'] == "Pendente":         
-            x.append(card_cadastro(nomes[i]))
+    for i in nomes:       
+        x.append(card_cadastro(nomes[i]))
             
     return html.Div(x)
 
 def render_layout():
-    df = pd.read_sql(fr"select * from cadastros where usuario = '{current_user.id}' order by data_cad desc, razao asc ", create_connection())
-    cadastros = df.to_dict('index')
-    if len(df) == 0:
-        pendencias = html.Legend('Não há Cadastros Pendentes', style={'text-align':'center'})
-    else:
-        pendencias = preencher_Cadastros(cadastros)
+    
     template = html.Div([
                             dbc.Modal(
                                 [
@@ -92,10 +72,10 @@ def render_layout():
                             ),
                             dcc.Location(id='data-url-altera'),
                             html.Br(),
-                            html.Legend('Cadastros Pendentes', style={'text-align':'center','font-size':'28px', 'color':'#14a583'}),
+                            html.Legend('Cadastros Pendentes', id="carregar_pendencias",style={'text-align':'center','font-size':'28px', 'color':'#14a583'}),
                             html.Hr(),
                             html.Br(),
-                            pendencias,
+                            html.Div(children=[html.Legend('Carregando...', style={'text-align':'center'})],id="pendencias"),
                             html.Div(id='testeids'),
                             html.Br(),
                             html.Hr()
@@ -103,6 +83,23 @@ def render_layout():
     return template
 
 # ================ Callbacks ================ #
+
+@app.callback(
+    Output("pendencias", "children"),
+    Input("carregar_pendencias", "children")
+)
+def atualiza_pendencias(ele):
+    
+    df = pd.read_sql(fr"select * from cadastros where usuario = '{current_user.id}' and status_cad <> 'Completo' order by data_cad desc, razao asc ", create_connection())
+    cadastros = df.to_dict('index')
+    pendencias = html.Legend('Não há Cadastros Pendentes', style={'text-align':'center'})
+    if len(df) == 0:
+        pendencias = html.Legend('Não há Cadastros Pendentes', style={'text-align':'center'})
+    else:
+        pendencias = preencher_Cadastros(cadastros)
+    
+    return pendencias
+        
 
 @app.callback(
     Output('modal-sm','is_open'),
@@ -113,8 +110,8 @@ def render_layout():
 )
 def abrir_modal_pendencias(n_click,is_open):
     if n_click == None:
-        raise PreventUpdate
-    if n_click:
+        return False
+    if n_click :
         ctx = dash.callback_context
         trigg_id = ctx.triggered[0]['prop_id'].split('.')[0]
         if trigg_id == None or trigg_id == '':
@@ -124,8 +121,8 @@ def abrir_modal_pendencias(n_click,is_open):
             id_cadastro = trigg_id_dict['index']
             df = pd.read_sql(fr"select * from pendencias where id_cadastro = '{id_cadastro}'", create_connection())
             btns = dbc.Row([
-                                dbc.Col(dbc.Button("Visualizar",href=fr'/cadastrospendentes/visualizar/{id_cadastro}', style={'width':'100%'}), width=6),
-                                dbc.Col(dbc.Button("Editar",href=f'/cadastrospendentes/alteracadastro/{id_cadastro}', style={'width':'100%'}), width=6),
+                                dbc.Col(dbc.Button("Visualizar",href=fr'/app/cadastrospendentes/visualizar/{id_cadastro}', style={'width':'100%'}), width=6),
+                                dbc.Col(dbc.Button("Editar",href=f'/app/cadastrospendentes/alteracadastro/{id_cadastro}', style={'width':'100%'}), width=6),
                             ],style={'width':'100%','padding':'0', 'margin':'0'})
                     
             if len(df) == 0:

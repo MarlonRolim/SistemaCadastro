@@ -1,46 +1,10 @@
-from dash import html, dcc
-from dash.dependencies import Input, Output, State
-import dash_bootstrap_components as dbc
+
 from app import *
 
-import numpy as np
-import pandas as pd
-import plotly.express as px
-import plotly.graph_objects as go
-from dash_bootstrap_templates import load_figure_template
 
-from werkzeug.security import generate_password_hash, check_password_hash
-from flask_login import login_user, logout_user, current_user
-from dash.exceptions import PreventUpdate
-
-{
-    'cnpj' : {},
-   'cpf' : {},
-    'ie' : {},
-    'razao' : {},
-    'endereco': {},
-    'numero' : {},
-    'complemento' : {},
-    'cidade' : {},
-    'bairro' : {},
-    'estado' : {},
-    'cep' : {},
-    'nome_contato' : {},
-    'tel_com' : {},
-    'tel_cel' : {},
-    'email' : {},
-    'forma_pagamento' : {},
-    'banco' : {},
-    'n_banco' : {},
-    'tipo_conta' : {},
-    'agencia' : {},
-    'conta' : {},
-    'dig_conta' : {},
-}
-
-estados = ['AC', 'AL', 'AM', 'AP', 'BA', 'CE', 'DF', 'ES', 'GO', 'MA', 'MG',
+estados = ('AC', 'AL', 'AM', 'AP', 'BA', 'CE', 'DF', 'ES', 'GO', 'MA', 'MG',
        'MS', 'MT', 'PA', 'PB', 'PE', 'PI', 'PR', 'RJ', 'RN', 'RO', 'RR',
-       'RS', 'SC', 'SE', 'SP', 'TO']
+       'RS', 'SC', 'SE', 'SP', 'TO')
 # :::::::::::::::: Layout :::::::::::::::: #
 
 def render_layout(id,pagina):
@@ -49,7 +13,7 @@ def render_layout(id,pagina):
     cad = pd.read_sql(fr"select * from cadastros where id = '{id}'",create_connection())
     cad = cad.to_dict('index')
     cad = cad[0]
-    botao_voltar = dbc.Button('Voltar', href=fr'/{pagina}',style={'width':'100%'})
+    botao_voltar = dbc.Button('Voltar', href=fr'/app/{pagina}',style={'width':'100%'})
     
     items = [
                     
@@ -64,6 +28,27 @@ def render_layout(id,pagina):
                     
                     dbc.Label('Razão Social: '),
                     dbc.Input(value=cad['razao'],placeholder='', type="text", id='txt-razao'),
+                    
+                    
+                    dbc.Label('Nome do Sitio/Fazenda: '),
+                    dbc.Input(value=cad['fazenda'],placeholder='', type="text", id='txt-fazenda'),
+                    
+                    dbc.Label('Tipo de Área: '),
+                    dbc.Select(id='select_area', 
+                            options=[{'label': "Própria", 'value': "Propria"},{'label': "Arrendamento", 'value': "Arrendamento"}],
+                            value=cad['area'],),
+                    html.Br(),
+                    html.Div([
+                            dbc.Label('Nome do Proprietário: '),
+                            dbc.Input(value=cad['proprietario'],placeholder='', type="text", id='txt-proprietario'),
+                    ], id="div_arrend", style={'display':'None'}),
+                   
+                    dbc.Label('Quantidade de Árvores: '),
+                    dbc.Input(value=cad['arvores'],placeholder='', type="number", id='txt-arvores'),
+                    
+                    dbc.Label('Quantidade de Faces Estriadas: '),
+                    dbc.Input(value=cad['faces'],placeholder='', type="number", id='txt-faces'),
+
                     
                     html.Hr(),
                     
@@ -235,11 +220,18 @@ def banco(n_clicks,pagamento):
         State('txt-agencia', 'value'),
         State('txt-conta', 'value'),
         State('txt-dig-conta', 'value'),
-        State('id_fantasma', 'children')
+        State('id_fantasma', 'children'),
+        State('txt-fazenda', 'value'),
+        State('select_area', 'value'),
+        State('txt-proprietario', 'value'),
+        State('txt-arvores', 'value'),
+        State('txt-faces', 'value'),
         
     ]
 )
-def cadastrar(n_clicks, cnpj, cpf, ie, razao, endereco, n_endereco, complemento, cidade, bairro, estado, cep, nome_contato, tel_com, tel_cel, email, form_pagamento, banco, n_banco, tipo_conta, agencia, conta, n_conta, id):
+def cadastrar(n_clicks, cnpj, cpf, ie, razao, endereco, n_endereco, complemento, cidade, bairro, estado, cep, nome_contato, tel_com, tel_cel, email, form_pagamento, banco, n_banco, tipo_conta, agencia, conta, n_conta, id, fazenda, area, proprietario, arvores, faces):
+    
+    
     if n_clicks == None:
         raise PreventUpdate
     
@@ -256,6 +248,23 @@ def cadastrar(n_clicks, cnpj, cpf, ie, razao, endereco, n_endereco, complemento,
     
     if razao == None or razao == "":
         return '',dbc.Alert('Preencha a Razão Social!',color='danger')
+    
+    if fazenda == None or fazenda == "":
+        return '',dbc.Alert('Preencha a o Sitio/Fazenda!',color='danger')
+    
+    if area == None or area == "":
+        return '',dbc.Alert('Preencha o tipo de Área!',color='danger')
+    
+    if area == "Arrendamento" and (proprietario == None or proprietario == ""):
+        return '',dbc.Alert('Preencha o Nome do Proprietário!',color='danger')
+    
+    if arvores == None or arvores == "":
+        return '',dbc.Alert('Preencha a Quantidade de Árvores!',color='danger')
+    if faces == None or faces == "":
+        return '',dbc.Alert('Preencha a Quantidade de Faces estriadas!',color='danger')
+
+    if proprietario == None:
+        proprietario = ''
     
     if endereco == None or endereco == '' or n_endereco == None or n_endereco == '' or cidade == None or cidade == '' or estado == None or estado == '' or cep == None or cep == '':
         return '',dbc.Alert('Preencha todos os campos de endereço!',color='danger')
@@ -326,6 +335,11 @@ def cadastrar(n_clicks, cnpj, cpf, ie, razao, endereco, n_endereco, complemento,
                                     conta = str(conta),
                                     dig_conta = str(n_conta),
                                     usuario = current_user.id,
+                                    fazenda = fazenda,
+                                    area = area,
+                                    proprietario = proprietario,
+                                    arvores = arvores,
+                                    faces = faces,
                                     status_cad = "Pendente",
                                     )
     conn = engine.connect()
@@ -336,6 +350,14 @@ def cadastrar(n_clicks, cnpj, cpf, ie, razao, endereco, n_endereco, complemento,
     conn = engine.connect()
     conn.execute(ins)
     conn.close()
+    
+    mensagem = fr"""Cadastro Alterado
+{razao}"""
+    df =  pd.read_sql(fr"select id from users where user_type = '{1}'", create_connection())
+    admins = df['id'].unique()
+    for i in admins:
+        enviar_notificacao(id_notificacao(i), mensagem)
+    
     return 'Sucesso',''
     
     
@@ -347,4 +369,4 @@ def cadastrar(n_clicks, cnpj, cpf, ie, razao, endereco, n_endereco, complemento,
 )
 def sucesso(trig, data):
     if data == "Sucesso":
-        return '/sucesso'
+        return '/app/sucesso'

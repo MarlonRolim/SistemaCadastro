@@ -1,18 +1,5 @@
-from dash import html, dcc
-from dash.dependencies import Input, Output, State
-import dash_bootstrap_components as dbc
+
 from app import *
-
-import numpy as np
-import pandas as pd
-import plotly.express as px
-import plotly.graph_objects as go
-from dash_bootstrap_templates import load_figure_template
-
-from werkzeug.security import generate_password_hash, check_password_hash
-from flask_login import login_user, logout_user, current_user
-from dash.exceptions import PreventUpdate
-
 from pages.styles import *
 
 
@@ -64,7 +51,7 @@ def card_cadastro(cadastro):
                                     ],width=5)
                                 ]),
                     ], style={"padding-left": "10px", "padding-top": "5px", 'height':'135px', 'width':'95%'}),
-                    dbc.Card(dbc.Button(html.Div(className="fa fa-angle-right", style=card_icon),id={'type': 'pendencias_cadastro', 'index': id}, href=fr'/pesquisacadastro/visualizar/{id}', color='link', style=card_icon),
+                    dbc.Card(dbc.Button(html.Div(className="fa fa-angle-right", style=card_icon),id={'type': 'pendencias_cadastro', 'index': id}, href=fr'/app/pesquisacadastro/visualizar/{id}', color='link', style=card_icon),
                         color="success",
                         style=card_right,
                     )

@@ -1,12 +1,5 @@
-from dash import html, dcc
-from dash.dependencies import Input, Output, State
-import dash_bootstrap_components as dbc
-import dash
-from dash.exceptions import PreventUpdate
-import numpy as np
-import pandas as pd
+
 from app import *
-from werkzeug.security import generate_password_hash
 
 
 

@@ -1,17 +1,6 @@
-from dash import html, dcc
-from dash.dependencies import Input, Output, State
-import dash_bootstrap_components as dbc
-from app import *
-import datetime
-import numpy as np
-import pandas as pd
-import plotly.express as px
-import plotly.graph_objects as go
-from dash_bootstrap_templates import load_figure_template
 
-from werkzeug.security import generate_password_hash, check_password_hash
-from flask_login import login_user, logout_user, current_user
-from dash.exceptions import PreventUpdate
+from app import *
+
 
 def corStatus(status):
     if status == 'Completo': return '#14a583'
@@ -25,8 +14,8 @@ def render_layout(id,pagina):
     dic = df.to_dict('index')
     dic = dic[0]
     
-    botao_voltar = dbc.Button('Voltar', href=fr'/{pagina}',style={'width':'100%','margin-bottom':'10px'})
-    botao_alterar = dbc.Button("Editar",href=f'/{pagina}/alteracadastro/{id}', style={'width':'100%'})
+    botao_voltar = dbc.Button('Voltar', href=fr'/app/{pagina}',style={'width':'100%','margin-bottom':'10px'})
+    botao_alterar = dbc.Button("Editar",href=f'/app/{pagina}/alteracadastro/{id}', style={'width':'100%'})
     solicitante = pd.read_sql(fr"select * from users where id = '{dic['usuario']}'", create_connection())
     solicitante = solicitante.to_dict('index')
     solicitante = solicitante[0]['name']
@@ -90,6 +79,31 @@ def render_layout(id,pagina):
                     dbc.Label('Razão Social: ', style={'font-size':'18px', 'color':'#14a583'}),
                     html.Br(),
                     dbc.Label(dic['razao']),
+                    html.Br(),
+                    
+                    dbc.Label('Nome do Sítio/Fazenda: ', style={'font-size':'18px', 'color':'#14a583'}),
+                    html.Br(),
+                    dbc.Label(dic['fazenda']),
+                    html.Br(),
+                    
+                    dbc.Label('Tipo de Área: ', style={'font-size':'18px', 'color':'#14a583'}),
+                    html.Br(),
+                    dbc.Label(dic['area']),
+                    html.Br(),
+                    
+                    dbc.Label('Nome do Proprietário: ', style={'font-size':'18px', 'color':'#14a583'}),
+                    html.Br(),
+                    dbc.Label(dic['proprietario']),
+                    html.Br(),
+                    
+                    dbc.Label('Quantidade de Árvores: ', style={'font-size':'18px', 'color':'#14a583'}),
+                    html.Br(),
+                    dbc.Label(dic['arvores']),
+                    html.Br(),
+                    
+                    dbc.Label('Quantidade de Faces Estriadas: ', style={'font-size':'18px', 'color':'#14a583'}),
+                    html.Br(),
+                    dbc.Label(dic['faces']),
                     html.Br(),
                     
                     html.Hr(),
