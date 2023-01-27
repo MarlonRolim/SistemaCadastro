@@ -46,7 +46,7 @@ def render_layout(message):
 def successful(n_clicks, username, password):
     if n_clicks == None:
         raise PreventUpdate
-    user = Users.query.filter_by(username=username).first()
+    user = Users.query.filter_by(username=username.lower()).first()
     if user and password is not None:
         if check_password_hash(user.password, password):
             login_user(user)
