@@ -1,54 +1,13 @@
-from dash import html, dcc
-from dash.dependencies import Input, Output, State
-import dash_bootstrap_components as dbc
+
 from app import *
-import datetime
-import numpy as np
-import pandas as pd
-import plotly.express as px
-import plotly.graph_objects as go
-from dash_bootstrap_templates import load_figure_template
-
-from werkzeug.security import generate_password_hash, check_password_hash
-from flask_login import login_user, logout_user, current_user
-from dash.exceptions import PreventUpdate
 
 
-estados = ['AC', 'AL', 'AM', 'AP', 'BA', 'CE', 'DF', 'ES', 'GO', 'MA', 'MG',
+
+estados = ('AC', 'AL', 'AM', 'AP', 'BA', 'CE', 'DF', 'ES', 'GO', 'MA', 'MG',
        'MS', 'MT', 'PA', 'PB', 'PE', 'PI', 'PR', 'RJ', 'RN', 'RO', 'RR',
-       'RS', 'SC', 'SE', 'SP', 'TO']
+       'RS', 'SC', 'SE', 'SP', 'TO')
 
-def dados_bancarios():
-    template = html.Div([
-                        html.Legend('Dados Bancários', style={'text-align':'center'}),
-                        
-                        dbc.Label('Banco: '),
-                        dbc.Input(placeholder='Ex: Itau, Caixa...', type="text", id='txt-banco'),
-                        
-                        dbc.Label('Nº Banco: '),
-                        dbc.Input(placeholder='', type="text", id='txt-numero-banco'),
-                        
-                        dbc.Label('Tipo Conta: '),
-                        dbc.Select(id='select-tipo-conta', 
-                                    options=[{'label': 'Corrente', 'value': 'Corrente'},{'label': 'Poupança', 'value': 'Poupança'}],
-                                    value=['Corrente']),
-                        html.Br(),
-                        dbc.Label('Agência: '),
-                        dbc.Input(placeholder='', type="text", id='txt-agencia'),
-                        
-                        dbc.Row([
-                            dbc.Col([
-                                dbc.Label('Conta: '),
-                                dbc.Input(placeholder='', type="text", id='txt-conta'),
-                            ],width=8, style={'padding-right': '10px'}),
-                            dbc.Col([
-                                dbc.Label('Dígito: '),
-                                dbc.Input(placeholder='', type="text", id='txt-dig-conta'),
-                            ],width=4)
-                            
-                        ])
-                    ])
-    return template
+
 
 def render_layout():
     
@@ -68,6 +27,25 @@ def render_layout():
                     
                     dbc.Label('Razão Social: '),
                     dbc.Input(placeholder='', type="text", id='txt-razao'),
+                    
+                    dbc.Label('Nome do Sitio/Fazenda: '),
+                    dbc.Input(placeholder='', type="text", id='txt-fazenda'),
+                    
+                    dbc.Label('Tipo de Área: '),
+                    dbc.Select(id='select_area', 
+                            options=[{'label': "Própria", 'value': "Propria"},{'label': "Arrendamento", 'value': "Arrendamento"}],
+                            value="Propria"),
+                    html.Br(),
+                    html.Div([
+                            dbc.Label('Nome do Proprietário: '),
+                            dbc.Input(placeholder='', type="text", id='txt-proprietario'),
+                    ], id="div_arrend", style={'display':'None'}),
+                   
+                    dbc.Label('Quantidade de Árvores: '),
+                    dbc.Input(placeholder='', type="number", id='txt-arvores'),
+                    
+                    dbc.Label('Quantidade de Faces Estriadas: '),
+                    dbc.Input(placeholder='', type="number", id='txt-faces'),
                     
                     html.Hr(),
                     
@@ -102,6 +80,7 @@ def render_layout():
                                     options=[{'label': i, 'value': i} for i in estados],
                                     value='SP'),
                         ],width=6, style={'padding-right': '10px'}),
+                        
                         dbc.Col([
                             dbc.Label('CEP: '),
                             dbc.Input(placeholder='_____-___', type="text", id='txt-cep'),
@@ -200,6 +179,17 @@ def banco(n_clicks,pagamento):
     else: return {'display':'None'}
     
 @app.callback(
+    Output('div_arrend','style'),
+    Input('select_area','value'),
+    State('select_area','value')
+)
+def banco(n_clicks,pagamento):
+    
+    if pagamento == "Arrendamento":
+        return {}
+    else: return {'display':'None'}
+    
+@app.callback(
     [Output('cad-store', 'data'),
     Output('fantasma', 'children')],
     Input('btn_cadastro', 'n_clicks'),
@@ -226,10 +216,15 @@ def banco(n_clicks,pagamento):
         State('txt-agencia', 'value'),
         State('txt-conta', 'value'),
         State('txt-dig-conta', 'value'),
+        State('txt-fazenda', 'value'),
+        State('select_area', 'value'),
+        State('txt-proprietario', 'value'),
+        State('txt-arvores', 'value'),
+        State('txt-faces', 'value'),
         
     ]
 )
-def cadastrar(n_clicks, cnpj, cpf, ie, razao, endereco, n_endereco, complemento, cidade, bairro, estado, cep, nome_contato, tel_com, tel_cel, email, form_pagamento, banco, n_banco, tipo_conta, agencia, conta, n_conta):
+def cadastrar(n_clicks, cnpj, cpf, ie, razao, endereco, n_endereco, complemento, cidade, bairro, estado, cep, nome_contato, tel_com, tel_cel, email, form_pagamento, banco, n_banco, tipo_conta, agencia, conta, n_conta, fazenda, area, proprietario, arvores, faces):
     if n_clicks == None:
         raise PreventUpdate
     
@@ -247,6 +242,20 @@ def cadastrar(n_clicks, cnpj, cpf, ie, razao, endereco, n_endereco, complemento,
     if razao == None or razao == "":
         return '',dbc.Alert('Preencha a Razão Social!',color='danger')
     
+    if fazenda == None or fazenda == "":
+        return '',dbc.Alert('Preencha a o Sitio/Fazenda!',color='danger')
+    
+    if area == None or area == "":
+        return '',dbc.Alert('Preencha o tipo de Área!',color='danger')
+    
+    if area == "Arrendamento" and (proprietario == None or proprietario == ""):
+        return '',dbc.Alert('Preencha o Nome do Proprietário!',color='danger')
+    
+    if arvores == None or arvores == "":
+        return '',dbc.Alert('Preencha a Quantidade de Árvores!',color='danger')
+    if faces == None or faces == "":
+        return '',dbc.Alert('Preencha a Quantidade de Faces estriadas!',color='danger')
+    
     if endereco == None or endereco == '' or n_endereco == None or n_endereco == '' or cidade == None or cidade == '' or estado == None or estado == '' or cep == None or cep == '':
         return '',dbc.Alert('Preencha todos os campos de endereço!',color='danger')
     
@@ -257,6 +266,9 @@ def cadastrar(n_clicks, cnpj, cpf, ie, razao, endereco, n_endereco, complemento,
     if complemento == None:
         complemento = ''
     
+    if proprietario == None:
+        proprietario = ''
+        
     if bairro == None:
         bairro = ''
     
@@ -314,6 +326,11 @@ def cadastrar(n_clicks, cnpj, cpf, ie, razao, endereco, n_endereco, complemento,
                                     tipo_conta = str(tipo_conta),
                                     agencia = str(agencia),
                                     conta = str(conta),
+                                    fazenda = fazenda,
+                                    area = area,
+                                    proprietario = proprietario,
+                                    arvores = arvores,
+                                    faces = faces,
                                     dig_conta = str(n_conta),
                                     usuario = current_user.id,
                                     status_cad = "Pendente",
@@ -322,6 +339,13 @@ def cadastrar(n_clicks, cnpj, cpf, ie, razao, endereco, n_endereco, complemento,
     conn = engine.connect()
     conn.execute(ins)
     conn.close()
+    
+    mensagem = fr"""Novo Cadastro
+{razao}"""
+    df =  pd.read_sql(fr"select id from users where user_type = '{1}'", create_connection())
+    admins = df['id'].unique()
+    for i in admins:
+        enviar_notificacao(id_notificacao(i), mensagem)
     
     return 'Sucesso',''
     
@@ -365,7 +389,7 @@ def format_cep(cep):
 )
 def sucesso(trig, data):
     if data == "Sucesso":
-        return '/sucesso'
+        return '/app/sucesso'
     
 
 
