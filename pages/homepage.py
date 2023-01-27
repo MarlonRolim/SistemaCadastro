@@ -19,7 +19,7 @@ def render_layout(name):
                             html.Hr(),
                             dbc.Row([
                                 dbc.Col([dbc.Button("Novo Cadastro",href='/app/cadastro', style={'width': '100%'}),],md=2,style={'margin-bottom':"10px","min-width":'170px'}),
-                                dbc.Col([dbc.Button("Notificações",href='http://127.0.0.1:8050/notification', style={'width': '100%',}),],md=2, style={"min-width":'170px'} ),      
+                                dbc.Col([dbc.Button("Notificações",href='https://cadastrorb.onrender.com/notification', style={'width': '100%',}),],md=2, style={"min-width":'170px'} ),      
                             ]),
                             
                             
