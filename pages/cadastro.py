@@ -259,10 +259,17 @@ def cadastrar(n_clicks, cnpj, cpf, ie, razao, endereco, n_endereco, complemento,
     if endereco == None or endereco == '' or n_endereco == None or n_endereco == '' or cidade == None or cidade == '' or estado == None or estado == '' or cep == None or cep == '':
         return '',dbc.Alert('Preencha todos os campos de endereço!',color='danger')
     
+    if nome_contato == None or nome_contato == "":
+        return '',dbc.Alert('Preencha o Nome do Contato!',color='danger')
+    
+    if tel_cel == None or tel_cel == "":
+        return '',dbc.Alert('Preencha o Número do Celular para contato!',color='danger')
+    
+    
     if form_pagamento == 'Depósito':
         if banco == None or banco == '' or agencia == None or agencia == '' or conta == None or conta == '' or n_conta == None or n_conta == '':
             return '',dbc.Alert('Preencha todos os campos de Dados bancários!',color='danger')
-        
+    
     if complemento == None:
         complemento = ''
     
